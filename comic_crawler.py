@@ -10,7 +10,7 @@ def sleeptime(hour, min, sec):
     return hour*3600 + min*60 + sec
 
 
-def crawComicInfo(urls):
+def crawComicInfo(urls, interval):
     result = []
     for url in urls:
         print('start craw:' + url)
@@ -23,7 +23,7 @@ def crawComicInfo(urls):
         lastUpdateTime = status.select('span')[1].getText()
         newestChapter = status.find('a').getText()
         result.append({'name': comicName, 'last_update': lastUpdateTime,
-                       'chapter': newestChapter, 'img': imgHref})
+                       'chapter': newestChapter, 'img': imgHref, 'url': url})
         print('finish')
-        time.sleep(sleeptime(0, 0, 5))
+        time.sleep(sleeptime(0, 0, interval))
     return result

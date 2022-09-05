@@ -10,10 +10,12 @@ newestRecordPath = './newest.json'
 envPath = './env.json'
 
 comicUrls = []
+interval = 5
 # load env
 with open(envPath, 'r') as f:
     env = json.load(f)
     comicUrls = env['comics']
+    interval = env['interval']
 f.close()
 
 app = Flask(__name__)
@@ -25,19 +27,18 @@ scheduler = APScheduler()
 
 @scheduler.task('cron', id='scan_comic', hour='6')
 def scanComic():
-    infos = crawComicInfo(comicUrls)
+    print('start sanc_comic_scheduler')
+    infos = crawComicInfo(comicUrls, interval)
     result = {'result': infos, 'modified': ''}
-
     with open(newestRecordPath, 'w') as f:
         state = os.stat(newestRecordPath)
         modified = datetime.fromtimestamp(state.st_mtime, tz=timezone.utc)
         result['modified'] = modified.isoformat()
         f.write(json.dumps(result))
+    print('finish sanc_comic_scheduler')
 
 
 scheduler.start()
-
-scheduler.get_jobs()
 
 
 @app.route('/', methods=['GET'])
@@ -49,7 +50,7 @@ def root():
 
 @app.route("/api/comic_info", methods=['PUT'])
 def updateComicInfo():
-    infos = crawComicInfo(comicUrls)
+    infos = crawComicInfo(comicUrls, interval)
     result = {'result': infos, 'modified': ''}
 
     with open(newestRecordPath, 'w') as f:
